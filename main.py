@@ -37,7 +37,7 @@ async def handle_photo(message: Message):
         await message.reply(f"❌ API помилка: {response.status_code}")
         return
 
-        try:
+            try:
         result = response.json()
         item = result["results"][0]
         name = item["name"]
@@ -58,7 +58,6 @@ async def handle_photo(message: Message):
 
     except Exception as e:
         await message.reply(f"⚠️ Помилка при обробці відповіді: {str(e)}")
-
 
     except Exception as e:
         await message.reply(f"⚠️ Помилка при обробці відповіді: {str(e)}")
