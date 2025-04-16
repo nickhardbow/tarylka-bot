@@ -47,15 +47,11 @@ async def handle_photo(message: Message):
         fat = round(nutrients.get("fat_total_g", 0), 1)
         carbs = round(nutrients.get("carbohydrates_total_g", 0), 1)
 
-        reply = (
-            f"🍽 Страва: {name}
-"
-            f"🔥 Калорії: {kcal} ккал
-"
-            f"💪 Білки: {protein} г
-"
-            f"🥑 Жири: {fat} г
-"
+                reply = (
+            f"🍽 Страва: {name}\n"
+            f"🔥 Калорії: {kcal} ккал\n"
+            f"💪 Білки: {protein} г\n"
+            f"🥑 Жири: {fat} г\n"
             f"🍞 Вуглеводи: {carbs} г"
         )
         await message.reply(reply)
