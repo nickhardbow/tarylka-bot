@@ -34,11 +34,11 @@ async def handle_photo(message: Message):
     )
 
     if response.status_code != 200:
-        await message.reply("❌ Не вдалося обробити фото. Спробуйте ще раз.")
+        await message.reply(f"❌ API помилка: {response.status_code}")
         return
 
-    result = response.json()
     try:
+        result = response.json()
         item = result["results"][0]
         name = item["name"]
         nutrients = item["nutrients"]
@@ -48,16 +48,20 @@ async def handle_photo(message: Message):
         carbs = round(nutrients.get("carbohydrates_total_g", 0), 1)
 
         reply = (
-    f"🍽 Страва: {name}\n"
-    f"🔥 Калорії: {kcal} ккал\n"
-    f"💪 Білки: {protein} г\n"
-    f"🥑 Жири: {fat} г\n"
-    f"🍞 Вуглеводи: {carbs} г"
-)
+            f"🍽 Страва: {name}
+"
+            f"🔥 Калорії: {kcal} ккал
+"
+            f"💪 Білки: {protein} г
+"
+            f"🥑 Жири: {fat} г
+"
+            f"🍞 Вуглеводи: {carbs} г"
+        )
         await message.reply(reply)
 
     except Exception as e:
-        await message.reply("⚠️ Не вдалося розпізнати їжу. Спробуйте інше фото.")
+        await message.reply(f"⚠️ Помилка при обробці відповіді: {str(e)}")
 
 if __name__ == "__main__":
     executor.start_polling(dp)
