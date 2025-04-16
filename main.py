@@ -37,7 +37,7 @@ async def handle_photo(message: Message):
         await message.reply(f"❌ API помилка: {response.status_code}")
         return
 
-    try:
+        try:
         result = response.json()
         item = result["results"][0]
         name = item["name"]
@@ -47,7 +47,7 @@ async def handle_photo(message: Message):
         fat = round(nutrients.get("fat_total_g", 0), 1)
         carbs = round(nutrients.get("carbohydrates_total_g", 0), 1)
 
-                reply = (
+        reply = (
             f"🍽 Страва: {name}\n"
             f"🔥 Калорії: {kcal} ккал\n"
             f"💪 Білки: {protein} г\n"
@@ -55,6 +55,10 @@ async def handle_photo(message: Message):
             f"🍞 Вуглеводи: {carbs} г"
         )
         await message.reply(reply)
+
+    except Exception as e:
+        await message.reply(f"⚠️ Помилка при обробці відповіді: {str(e)}")
+
 
     except Exception as e:
         await message.reply(f"⚠️ Помилка при обробці відповіді: {str(e)}")
