@@ -14,7 +14,7 @@ CALORIEMAMA_API_KEY = os.getenv("CALORIE_API_KEY")
 WEBHOOK_PATH = "/webhook"
 WEBHOOK_URL = f"{os.getenv('WEBHOOK_BASE')}{WEBHOOK_PATH}"
 WEBAPP_HOST = "0.0.0.0"
-WEBAPP_PORT = int(os.environ.get("PORT", 8000))
+WEBAPP_PORT = int(os.environ.get("PORT", 10000))
 
 bot = Bot(token=TELEGRAM_TOKEN)
 dp = Dispatcher(bot)
