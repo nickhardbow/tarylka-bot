@@ -33,7 +33,7 @@ async def handle_photo(message: Message):
     }
 
     response = requests.post(
-        "https://api-2445582032290.production.caloriemama.ai/food-recognition/v1/recognize",
+        "https://api.caloriemama.ai/food-recognition/v1/recognize",
         headers=headers,
         data=photo_bytes.getvalue()
     )
