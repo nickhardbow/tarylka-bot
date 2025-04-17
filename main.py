@@ -27,7 +27,6 @@ async def handle_photo(message: Message):
     photo_file = await photo.download(destination=BytesIO())
     photo_file.seek(0)
 
-    # Відкриваємо зображення та змінюємо розмір до 544x544
     try:
         image = Image.open(photo_file)
         image = image.convert("RGB")
@@ -39,11 +38,10 @@ async def handle_photo(message: Message):
         await message.reply(f"⚠️ Помилка при обробці зображення: {str(e)}")
         return
 
-    # Відправляємо запит до API
     try:
         response = requests.post(
             f"https://api-2445582032290.production.gw.apicast.io/v1/foodrecognition?user_key={CALORIEMAMA_API_KEY}",
-            files={"media": ("photo.jpg", image_bytes, "image/jpeg")}
+            files={"image": ("photo.jpg", image_bytes, "image/jpeg")}
         )
     except Exception as e:
         await message.reply(f"⚠️ Помилка при з'єднанні з API: {str(e)}")
@@ -55,7 +53,7 @@ async def handle_photo(message: Message):
 
     try:
         result = response.json()
-        if not result["results"]:
+        if not result.get("results"):
             await message.reply("⚠️ Не вдалося розпізнати страву.")
             return
 
@@ -63,7 +61,7 @@ async def handle_photo(message: Message):
         name = item["name"]
         nutrients = item["nutrition"]
         kcal = round(nutrients.get("calories", 0))
-        protein = round(nutrients.get("protein", 0) * 1000, 1)  # Переводимо з кг в г
+        protein = round(nutrients.get("protein", 0) * 1000, 1)  # кг → г
         fat = round(nutrients.get("totalFat", 0) * 1000, 1)
         carbs = round(nutrients.get("totalCarbs", 0) * 1000, 1)
 
