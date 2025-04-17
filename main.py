@@ -1,7 +1,6 @@
 import os
 import requests
 import threading
-import time
 import http.server
 import socketserver
 from aiogram import Bot, Dispatcher
@@ -18,14 +17,13 @@ CALORIE_API_KEY = os.getenv("CALORIE_API_KEY")
 bot = Bot(token=TELEGRAM_TOKEN)
 dp = Dispatcher(bot)
 
-# Фейковий HTTP-сервер для Render (порт 10000)
+# Псевдо-сервер для Render
 def fake_server():
     Handler = http.server.SimpleHTTPRequestHandler
     with socketserver.TCPServer(("", 10000), Handler) as httpd:
         print("🌀 Псевдо-сервер запущено на порту 10000")
         httpd.serve_forever()
 
-# Стартуємо фейковий сервер у фоновому потоці
 threading.Thread(target=fake_server, daemon=True).start()
 
 @dp.message_handler(content_types=["photo"])
@@ -36,17 +34,18 @@ async def handle_photo(message: Message):
     photo_bytes = await photo.download(destination=BytesIO())
 
     files = {
-    'file': ('image.jpg', photo_bytes.getvalue(), 'image/jpeg'),
-}
-headers = {
-    "X-API-KEY": CALORIE_API_KEY,
-}
+        'file': ('image.jpg', photo_bytes.getvalue(), 'image/jpeg'),
+    }
 
-response = requests.post(
-    "https://api.caloriemama.ai/v1/food/recognize",
-    headers=headers,
-    files=files
-)
+    headers = {
+        "X-API-KEY": CALORIE_API_KEY,
+    }
+
+    response = requests.post(
+        "https://api.caloriemama.ai/v1/food/recognize",
+        headers=headers,
+        files=files
+    )
 
     if response.status_code != 200:
         await message.reply(f"❌ API помилка: {response.status_code}")
@@ -58,10 +57,10 @@ response = requests.post(
         name = item["name"]
         nutrients = item["nutrients"]
 
-        kcal    = round(nutrients.get("calories", 0))
+        kcal = round(nutrients.get("calories", 0))
         protein = round(nutrients.get("protein_g", 0), 1)
-        fat     = round(nutrients.get("fat_total_g", 0), 1)
-        carbs   = round(nutrients.get("carbohydrates_total_g", 0), 1)
+        fat = round(nutrients.get("fat_total_g", 0), 1)
+        carbs = round(nutrients.get("carbohydrates_total_g", 0), 1)
 
         reply = (
             f"🍽 Страва: {name}\n"
@@ -74,7 +73,6 @@ response = requests.post(
 
     except Exception as e:
         await message.reply(f"⚠️ Помилка при обробці відповіді: {e}")
-
 
 if __name__ == "__main__":
     executor.start_polling(dp)
