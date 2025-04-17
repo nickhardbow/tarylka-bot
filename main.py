@@ -9,7 +9,7 @@ from fastapi import FastAPI, Request
 import uvicorn
 
 load_dotenv()
-CALORIEMAMA_API_KEY = os.getenv("CALORIEMAMA_API_KEY")
+CALORIEMAMA_API_KEY = os.getenv("CALORIE_API_KEY")
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CALORIE_API_KEY = os.getenv("CALORIE_API_KEY")
