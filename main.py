@@ -26,7 +26,7 @@ async def handle_photo(message: Message):
     photo_bytes = await photo.download(destination=BytesIO())
 
     response = requests.post(
-        "https://api.caloriemama.ai/food-recognition/v1/recognize",
+        "https://api-2445582032290.production.gw.apicast.io/v1/foodrecognition?user_key=bdc5eb84dc147652a033aaab70979f40",
         headers={"X-API-KEY": CALORIEMAMA_API_KEY},
         files={"image": ("photo.jpg", photo_bytes.getvalue(), "image/jpeg")}
     )
