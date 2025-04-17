@@ -32,11 +32,11 @@ async def handle_photo(message: Message):
         "X-API-KEY": CALORIE_API_KEY,
     }
 
-response = requests.post(
+    response = requests.post(
     "https://api.caloriemama.ai/food-recognition/v1/recognize",
     headers={"X-API-KEY": CALORIEMAMA_API_KEY},
     files={"image": ("photo.jpg", photo_bytes.getvalue(), "image/jpeg")}
-)
+    )
 
     if response.status_code != 200:
         await message.reply(f"❌ API помилка: {response.status_code}")
