@@ -19,6 +19,21 @@ WEBAPP_PORT = int(os.environ.get("PORT", 10000))
 bot = Bot(token=TELEGRAM_TOKEN)
 dp = Dispatcher(bot)
 
+@dp.message_handler(commands=["start"])
+async def handle_start(message: Message):
+    try:
+        with open("start_image.png", "rb") as photo:
+            await message.answer_photo(
+                photo,
+                caption=(
+                    "👋 Привіт! Я бот *Тарілка* 🍽\n\n"
+                    "Надішли мені фото їжі — і я скажу, що це, скільки в ній калорій та КБЖУ!"
+                ),
+                parse_mode="Markdown"
+            )
+    except Exception as e:
+        await message.reply("Привіт! Надішли мені фото їжі — і я скажу, скільки в ній калорій. (⚠️ Помилка з картинкою)")
+
 @dp.message_handler(content_types=["photo"])
 async def handle_photo(message: Message):
     await message.reply("🔍 Аналізую страву...")
