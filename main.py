@@ -1,5 +1,9 @@
 import os
 import requests
+import threading
+import time
+import http.server
+import socketserver
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.utils import executor
@@ -8,26 +12,34 @@ from io import BytesIO
 
 load_dotenv()
 
-TELEGRAM_TOKEN   = os.getenv("TELEGRAM_TOKEN")
-CALORIE_API_KEY  = os.getenv("CALORIE_API_KEY")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+CALORIE_API_KEY = os.getenv("CALORIE_API_KEY")
 
 bot = Bot(token=TELEGRAM_TOKEN)
-dp  = Dispatcher(bot)
+dp = Dispatcher(bot)
 
+# Фейковий HTTP-сервер для Render (порт 10000)
+def fake_server():
+    Handler = http.server.SimpleHTTPRequestHandler
+    with socketserver.TCPServer(("", 10000), Handler) as httpd:
+        print("🌀 Псевдо-сервер запущено на порту 10000")
+        httpd.serve_forever()
+
+# Стартуємо фейковий сервер у фоновому потоці
+threading.Thread(target=fake_server, daemon=True).start()
 
 @dp.message_handler(content_types=["photo"])
 async def handle_photo(message: Message):
     await message.reply("🔍 Аналізую страву...")
 
-    # останнє (найякісніше) фото
     photo = message.photo[-1]
     photo_bytes = await photo.download(destination=BytesIO())
 
-    # запит до CalorieMama
     headers = {
         "Content-Type": "application/octet-stream",
         "X-API-KEY": CALORIE_API_KEY,
     }
+
     response = requests.post(
         "https://api.caloriemama.ai/v1/food/recognize",
         headers=headers,
@@ -39,9 +51,9 @@ async def handle_photo(message: Message):
         return
 
     try:
-        result    = response.json()
-        item      = result["results"][0]
-        name      = item["name"]
+        result = response.json()
+        item = result["results"][0]
+        name = item["name"]
         nutrients = item["nutrients"]
 
         kcal    = round(nutrients.get("calories", 0))
@@ -51,10 +63,10 @@ async def handle_photo(message: Message):
 
         reply = (
             f"🍽 Страва: {name}\n"
-            f"🔥 Калорії: {kcal} ккал\n"
-            f"💪 Білки: {protein} г\n"
-            f"🥑 Жири: {fat} г\n"
-            f"🍞 Вуглеводи: {carbs} г"
+            f"🔥 Калорії: {kcal} ккал\n"
+            f"💪 Білки: {protein} г\n"
+            f"🥑 Жири: {fat} г\n"
+            f"🍞 Вуглеводи: {carbs} г"
         )
         await message.reply(reply)
 
