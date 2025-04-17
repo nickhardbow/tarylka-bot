@@ -5,14 +5,11 @@ from aiogram.types import Message
 from aiogram.utils.executor import start_webhook
 from dotenv import load_dotenv
 from io import BytesIO
-from fastapi import FastAPI, Request
-import uvicorn
 
 load_dotenv()
-CALORIEMAMA_API_KEY = os.getenv("CALORIE_API_KEY")
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-CALORIE_API_KEY = os.getenv("CALORIE_API_KEY")
+CALORIEMAMA_API_KEY = os.getenv("CALORIE_API_KEY")
 WEBHOOK_PATH = "/webhook"
 WEBHOOK_URL = f"{os.getenv('WEBHOOK_BASE')}{WEBHOOK_PATH}"
 WEBAPP_HOST = "0.0.0.0"
@@ -28,15 +25,10 @@ async def handle_photo(message: Message):
     photo = message.photo[-1]
     photo_bytes = await photo.download(destination=BytesIO())
 
-    headers = {
-        "Content-Type": "application/octet-stream",
-        "X-API-KEY": CALORIE_API_KEY,
-    }
-
     response = requests.post(
-    "https://api.caloriemama.ai/food-recognition/v1/recognize",
-    headers={"X-API-KEY": CALORIEMAMA_API_KEY},
-    files={"image": ("photo.jpg", photo_bytes.getvalue(), "image/jpeg")}
+        "https://api.caloriemama.ai/food-recognition/v1/recognize",
+        headers={"X-API-KEY": CALORIEMAMA_API_KEY},
+        files={"image": ("photo.jpg", photo_bytes.getvalue(), "image/jpeg")}
     )
 
     if response.status_code != 200:
