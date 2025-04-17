@@ -35,16 +35,18 @@ async def handle_photo(message: Message):
     photo = message.photo[-1]
     photo_bytes = await photo.download(destination=BytesIO())
 
-    headers = {
-        "Content-Type": "application/octet-stream",
-        "X-API-KEY": CALORIE_API_KEY,
-    }
+    files = {
+    'file': ('image.jpg', photo_bytes.getvalue(), 'image/jpeg'),
+}
+headers = {
+    "X-API-KEY": CALORIE_API_KEY,
+}
 
-    response = requests.post(
-        "https://api.caloriemama.ai/v1/food/recognize",
-        headers=headers,
-        data=photo_bytes.getvalue()
-    )
+response = requests.post(
+    "https://api.caloriemama.ai/v1/food/recognize",
+    headers=headers,
+    files=files
+)
 
     if response.status_code != 200:
         await message.reply(f"❌ API помилка: {response.status_code}")
