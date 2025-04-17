@@ -1,30 +1,24 @@
 import os
 import requests
-import threading
-import http.server
-import socketserver
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, types
 from aiogram.types import Message
-from aiogram.utils import executor
+from aiogram.utils.executor import start_webhook
 from dotenv import load_dotenv
 from io import BytesIO
+from fastapi import FastAPI, Request
+import uvicorn
 
 load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CALORIE_API_KEY = os.getenv("CALORIE_API_KEY")
+WEBHOOK_PATH = "/webhook"
+WEBHOOK_URL = f"{os.getenv('WEBHOOK_BASE')}{WEBHOOK_PATH}"
+WEBAPP_HOST = "0.0.0.0"
+WEBAPP_PORT = int(os.environ.get("PORT", 8000))
 
 bot = Bot(token=TELEGRAM_TOKEN)
 dp = Dispatcher(bot)
-
-# Псевдо-сервер для Render
-def fake_server():
-    Handler = http.server.SimpleHTTPRequestHandler
-    with socketserver.TCPServer(("", 10000), Handler) as httpd:
-        print("🌀 Псевдо-сервер запущено на порту 10000")
-        httpd.serve_forever()
-
-threading.Thread(target=fake_server, daemon=True).start()
 
 @dp.message_handler(content_types=["photo"])
 async def handle_photo(message: Message):
@@ -33,18 +27,15 @@ async def handle_photo(message: Message):
     photo = message.photo[-1]
     photo_bytes = await photo.download(destination=BytesIO())
 
-    files = {
-        'file': ('image.jpg', photo_bytes.getvalue(), 'image/jpeg'),
-    }
-
     headers = {
+        "Content-Type": "application/octet-stream",
         "X-API-KEY": CALORIE_API_KEY,
     }
 
     response = requests.post(
-        "https://api.caloriemama.ai/v1/food/recognize",
+        "https://api-2445582032290.production.caloriemama.ai/food-recognition/v1/recognize",
         headers=headers,
-        files=files
+        data=photo_bytes.getvalue()
     )
 
     if response.status_code != 200:
@@ -56,7 +47,6 @@ async def handle_photo(message: Message):
         item = result["results"][0]
         name = item["name"]
         nutrients = item["nutrients"]
-
         kcal = round(nutrients.get("calories", 0))
         protein = round(nutrients.get("protein_g", 0), 1)
         fat = round(nutrients.get("fat_total_g", 0), 1)
@@ -70,9 +60,22 @@ async def handle_photo(message: Message):
             f"🍞 Вуглеводи: {carbs} г"
         )
         await message.reply(reply)
-
     except Exception as e:
-        await message.reply(f"⚠️ Помилка при обробці відповіді: {e}")
+        await message.reply(f"⚠️ Помилка при обробці відповіді: {str(e)}")
+
+async def on_startup(dp):
+    await bot.set_webhook(WEBHOOK_URL)
+
+async def on_shutdown(dp):
+    await bot.delete_webhook()
 
 if __name__ == "__main__":
-    executor.start_polling(dp)
+    start_webhook(
+        dispatcher=dp,
+        webhook_path=WEBHOOK_PATH,
+        on_startup=on_startup,
+        on_shutdown=on_shutdown,
+        skip_updates=True,
+        host=WEBAPP_HOST,
+        port=WEBAPP_PORT,
+    )
